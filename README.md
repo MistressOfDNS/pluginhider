@@ -1,6 +1,6 @@
 # PluginHider
 
-PluginHider is a Paper plugin that hides plugin-enumeration commands and command suggestions from regular players.
+PluginHider is a Paper plugin that hides plugins from regular players.
 
 It is meant for servers that do not want players, tab-completion tools, or client-side scanners to easily discover installed plugins through common Bukkit, Paper, or namespaced command surfaces.
 
@@ -17,13 +17,13 @@ It is meant for servers that do not want players, tab-completion tools, or clien
 
 This repository keeps separate branches for each supported server/API version:
 
-| Branch | Paper API |
-| --- | --- |
-| `1.21.1` | `1.21.1-R0.1-SNAPSHOT` |
-| `1.21.5` | `1.21.5-R0.1-SNAPSHOT` |
-| `1.21.8` | `1.21.8-R0.1-SNAPSHOT` |
-| `1.21.11` | `1.21.11-R0.1-SNAPSHOT` |
-| `version/26.1.2` | `26.1.2.build.69-stable` |
+| Branch            | Paper API                |
+| ----------------- | ------------------------ |
+| `1.21.1`          | `1.21.1-R0.1-SNAPSHOT`   |
+| `1.21.5`          | `1.21.5-R0.1-SNAPSHOT`   |
+| `1.21.8`          | `1.21.8-R0.1-SNAPSHOT`   |
+| `1.21.11`         | `1.21.11-R0.1-SNAPSHOT`  |
+| `version/26.1.2`  | `26.1.2.build.69-stable` |
 
 Use the branch that matches your server version.
 
@@ -84,8 +84,8 @@ Namespaces that stay visible when namespaced command hiding is enabled.
 
 ## Permissions
 
-| Permission | Description | Default |
-| --- | --- | --- |
+| Permission           | Description                                      | Default |
+| -------------------- | ------------------------------------------------ | ------- |
 | `pluginhider.bypass` | Allows a player to bypass PluginHider filtering. | `false` |
 
 If `bypass-permission` is blank in the config, no bypass permission is checked.
@@ -133,4 +133,3 @@ When porting to another Paper version, update:
 ## Notes
 
 PluginHider reduces common ways players can inspect installed plugins, but it cannot guarantee complete plugin secrecy. Some plugins may still expose identifying behavior, messages, permissions, commands, packets, or other side channels.
-
