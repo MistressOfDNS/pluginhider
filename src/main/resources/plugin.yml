@@ -1,7 +1,7 @@
 name: PluginHider
 version: ${version}
 main: dev.zitrone.pluginhider.PluginHiderPlugin
-api-version: "26.1.2"
+api-version: "1.21.8"
 authors: [zitrone]
 description: Hides plugin-enumeration surfaces from players and client-side mod scanners.
 permissions:
