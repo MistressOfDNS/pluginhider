@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "dev.zitrone"
-version = "26.1.2"
+version = "1.21.11"
 
 repositories {
     mavenCentral()
@@ -11,18 +11,18 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
-    options.release = 25
+    options.release = 21
 }
 
 tasks.processResources {
