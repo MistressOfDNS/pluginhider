@@ -1,0 +1,18 @@
+bypass-permission: ""
+blocked-command-message: "&cUnknown command."
+
+blocked-command-paths:
+  - "plugins"
+  - "pl"
+  - "version"
+  - "ver"
+  - "about"
+  - "icanhasbukkit"
+  - "paper plugins"
+  - "paper version"
+  - "paper ver"
+
+hide-namespaced-commands: true
+allowed-namespaces:
+  - "minecraft"
+  - "brigadier"
