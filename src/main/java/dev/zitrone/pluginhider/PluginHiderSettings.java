@@ -1,5 +1,6 @@
 package dev.zitrone.pluginhider;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -14,9 +15,40 @@ public record PluginHiderSettings(
     Component blockedCommandMessage,
     List<List<String>> blockedCommandPaths,
     boolean hideNamespacedCommands,
-    Set<String> allowedNamespaces
+    Set<String> allowedNamespaces,
+    Set<String> hiddenRootCommands
 ) {
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacyAmpersand();
+    private static final Set<String> DEFAULT_HIDDEN_ROOT_COMMANDS = Set.of(
+        "essentials", "essentialsx", "worldedit", "worldguard", "luckperms", "vault",
+        "citizens", "cmi", "cmilib", "multiverse-core", "multiverse", "viaversion",
+        "viabackwards", "viarewind", "geysermc", "geyser", "floodgate", "protocollib",
+        "coreprotect", "griefprevention", "shopkeepers", "dynmap", "placeholderapi",
+        "skinsrestorer", "skript", "advancedanticheat", "vulcan", "grimac", "matrix",
+        "spartan", "aac", "karhu", "verus", "nocheatplus", "authme", "deluxemenus",
+        "plotsquared", "supervanish", "packetevents", "oraxen", "itemsadder",
+        "fawe", "fastasyncworldedit", "luckpermsbukkit", "essentialsgeoip",
+        "essentialsprotect", "essentialsspawn", "essentialsxspawn",
+        "multiverse-inventories", "multiverse-netherportals", "worldborder",
+        "votifier", "nuvotifier", "votingplugin", "excellentcrates", "crazycrates",
+        "cratekeys", "jobs", "jobsreborn", "mcmmo", "towny", "factions",
+        "factionsuuid", "lands", "residence", "claimchunk", "quickshop",
+        "quickshop-hikari", "chestshop", "shopgui", "auctionhouse", "combatlogx",
+        "litebans", "advancedban", "libertybans", "luckpermsgui", "tab", "tablist",
+        "scoreboard", "animatedscoreboard", "ajleaderboards", "ajqueue", "spark",
+        "sparkbukkit", "plan", "minimotd", "protocolsupport", "excellentenchants",
+        "eco", "ecoenchants", "mythicmobs", "mythiclib", "modelengine", "mmoitems",
+        "mmocore", "denizen", "citizenscmd", "sentinel", "npcs", "vulcanbungee",
+        "grimacbukkit", "negativity", "intave", "polar", "horizon", "themis",
+        "libreforge", "autotreechop", "axgraves", "curios", "freedomchat",
+        "minertrack", "probablybackpacks", "tabtps", "veinminer", "lp", "we", "rg",
+        "mv", "npc", "papi", "co", "grim", "viaver", "sr", "dm", "plots", "sv",
+        "spawn", "home", "homes", "warp", "warps", "tpa", "tpahere", "bal",
+        "balance", "money", "ban", "kick", "mute", "jail", "seen", "ptime",
+        "pweather", "tppos", "near", "back", "afk", "msg", "r", "reply", "mail",
+        "pay", "sell", "worth", "kit", "kits", "lb", "ab", "vote", "votes", "f",
+        "res", "qs", "ah", "mm", "ncp"
+    );
 
     public static PluginHiderSettings fromConfig(FileConfiguration config) {
         List<List<String>> blockedPaths = config.getStringList("blocked-command-paths").stream()
@@ -29,17 +61,24 @@ public record PluginHiderSettings(
             .filter(token -> !token.isEmpty())
             .collect(Collectors.toUnmodifiableSet());
 
+        Set<String> hiddenRootCommands = new HashSet<>(DEFAULT_HIDDEN_ROOT_COMMANDS);
+        hiddenRootCommands.addAll(config.getStringList("hidden-root-commands").stream()
+            .map(PluginHiderSettings::normalizeTokenStatic)
+            .filter(token -> !token.isEmpty())
+            .collect(Collectors.toSet()));
+
         return new PluginHiderSettings(
             config.getString("bypass-permission", "pluginhider.bypass"),
             LEGACY_SERIALIZER.deserialize(config.getString("blocked-command-message", "&cUnknown command.")),
             blockedPaths,
             config.getBoolean("hide-namespaced-commands", true),
-            allowedNamespaces
+            allowedNamespaces,
+            Set.copyOf(hiddenRootCommands)
         );
     }
 
     public boolean shouldBypass(Player player) {
-        return !this.bypassPermission.isBlank() && player.hasPermission(this.bypassPermission);
+        return player.isOp() || (!this.bypassPermission.isBlank() && player.hasPermission(this.bypassPermission));
     }
 
     public boolean shouldBlockInput(String input) {
@@ -61,6 +100,10 @@ public record PluginHiderSettings(
             return true;
         }
 
+        if (this.hiddenRootCommands.contains(normalized)) {
+            return true;
+        }
+
         return this.blockedCommandPaths.stream()
             .filter(path -> path.size() == 1)
             .anyMatch(path -> path.getFirst().equals(normalized));
@@ -76,14 +119,27 @@ public record PluginHiderSettings(
             return true;
         }
 
+        if (isHiddenNamespaceContext(buffer)) {
+            return true;
+        }
+
         List<String> tokens = parseInput(buffer);
         if (tokens.isEmpty()) {
-            return this.blockedCommandPaths.stream().anyMatch(path -> !path.isEmpty() && path.getFirst().startsWith(normalizedSuggestion));
+            return shouldHideRootSuggestion(normalizedSuggestion)
+                || this.blockedCommandPaths.stream().anyMatch(path -> !path.isEmpty() && path.getFirst().startsWith(normalizedSuggestion));
         }
 
         List<String> contextTokens = tokens;
         if (!buffer.endsWith(" ")) {
             contextTokens = tokens.subList(0, tokens.size() - 1);
+        }
+
+        if (isRootSuggestionContext(contextTokens) && shouldHideRootSuggestion(normalizedSuggestion)) {
+            return true;
+        }
+
+        if (isHelpSuggestionContext(contextTokens) && shouldHideHelpSuggestion(contextTokens, normalizedSuggestion)) {
+            return true;
         }
 
         List<String> finalContextTokens = contextTokens;
@@ -119,6 +175,45 @@ public record PluginHiderSettings(
 
         String namespace = normalizeTokenStatic(literal.substring(0, separator));
         return !this.allowedNamespaces.contains(namespace);
+    }
+
+    private boolean isHiddenNamespaceContext(String buffer) {
+        if (!this.hideNamespacedCommands || buffer == null) {
+            return false;
+        }
+
+        String cleaned = buffer.trim();
+        if (cleaned.startsWith("/")) {
+            cleaned = cleaned.substring(1);
+        }
+
+        int spaceIndex = cleaned.indexOf(' ');
+        String firstToken = spaceIndex >= 0 ? cleaned.substring(0, spaceIndex) : cleaned;
+        return isHiddenNamespace(firstToken);
+    }
+
+    private boolean shouldHideRootSuggestion(String normalizedSuggestion) {
+        return this.hiddenRootCommands.contains(normalizedSuggestion)
+            || this.blockedCommandPaths.stream()
+                .filter(path -> path.size() == 1)
+                .anyMatch(path -> path.getFirst().equals(normalizedSuggestion));
+    }
+
+    private boolean isRootSuggestionContext(List<String> contextTokens) {
+        return contextTokens.isEmpty();
+    }
+
+    private boolean isHelpSuggestionContext(List<String> contextTokens) {
+        if (contextTokens.isEmpty()) {
+            return false;
+        }
+
+        String root = contextTokens.getFirst();
+        return "help".equals(root) || "?".equals(root);
+    }
+
+    private boolean shouldHideHelpSuggestion(List<String> contextTokens, String normalizedSuggestion) {
+        return true;
     }
 
     private static List<String> parsePath(String rawPath) {
