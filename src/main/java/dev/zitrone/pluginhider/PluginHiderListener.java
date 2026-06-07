@@ -90,7 +90,9 @@ public final class PluginHiderListener implements Listener {
             List<String> childPath = new ArrayList<>(path);
             childPath.add(this.settings.normalizeToken(childName));
 
-            if (this.settings.isHiddenNamespace(childName) || this.settings.isBlockedPath(childPath)) {
+            if ((path.isEmpty() && this.settings.shouldHideTopLevelCommand(childName))
+                || this.settings.isHiddenNamespace(childName)
+                || this.settings.isBlockedPath(childPath)) {
                 removeCommand(node, childName);
                 continue;
             }
