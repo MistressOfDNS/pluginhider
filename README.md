@@ -10,6 +10,7 @@ It is meant for servers that do not want players, tab-completion tools, or clien
 - Filters command suggestions and tab completions for blocked commands.
 - Prunes Paper/Brigadier command trees before they are sent to players.
 - Hides namespaced commands by default, while keeping trusted namespaces such as `minecraft` and `brigadier`.
+- Hides configured root command aliases that client scanners commonly use to infer plugins.
 - Supports a bypass permission for staff or trusted users.
 - Uses a simple YAML config.
 
@@ -58,13 +59,25 @@ hide-namespaced-commands: true
 allowed-namespaces:
   - "minecraft"
   - "brigadier"
+
+hidden-root-commands:
+  - "lp"
+  - "we"
+  - "rg"
+  - "mv"
+  - "npc"
+  - "papi"
+  - "home"
+  - "warp"
+  - "msg"
+  - "spark"
 ```
 
 ### Options
 
 `bypass-permission`
 
-Permission that lets a player bypass PluginHider filtering. Leave it blank to disable bypasses.
+Permission that lets a player bypass PluginHider filtering. Operators always bypass filtering; leave this blank to disable additional permission-based bypasses.
 
 `blocked-command-message`
 
@@ -82,13 +95,19 @@ When enabled, commands like `pluginname:command` are hidden unless their namespa
 
 Namespaces that stay visible when namespaced command hiding is enabled.
 
+`hidden-root-commands`
+
+Unnamespaced root commands to hide from command trees and root suggestions. This is useful for plugin roots and aliases such as `luckperms`, `grimac`, `lp`, `we`, `home`, `spark`, or similar commands that scanners can use as plugin fingerprints. Commands listed here are hidden from completion surfaces, but they are not blocked from direct execution unless they are also listed in `blocked-command-paths`.
+
+Suggestions inside `/help` and `/?` are hidden from non-bypassed players because some client scanners probe `/help a`, `/help b`, and similar prefixes to infer plugin names from any returned command.
+
 ## Permissions
 
 | Permission           | Description                                      | Default |
 | -------------------- | ------------------------------------------------ | ------- |
 | `pluginhider.bypass` | Allows a player to bypass PluginHider filtering. | `false` |
 
-If `bypass-permission` is blank in the config, no bypass permission is checked.
+Operators always bypass PluginHider filtering. If `bypass-permission` is blank in the config, no extra bypass permission is checked.
 
 ## Building
 
