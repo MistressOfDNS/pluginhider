@@ -2,8 +2,11 @@ plugins {
     java
 }
 
+val pluginVersion = "1.0"
+val paperTargetVersion = "1.21.8"
+
 group = "dev.zitrone"
-version = "1.21.8"
+version = pluginVersion
 
 repositories {
     mavenCentral()
@@ -25,8 +28,11 @@ tasks.withType<JavaCompile>().configureEach {
     options.release = 21
 }
 
+tasks.jar {
+    archiveFileName.set("PluginHider-$pluginVersion-Paper-$paperTargetVersion.jar")
+}
+
 tasks.processResources {
-    val pluginVersion = project.version.toString()
     inputs.property("version", pluginVersion)
 
     filesMatching("plugin.yml") {
