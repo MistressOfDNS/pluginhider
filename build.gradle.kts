@@ -2,7 +2,7 @@ plugins {
     java
 }
 
-val pluginVersion = "1.0"
+val pluginVersion = "1.1"
 val paperTargetVersion = "26.1.2"
 
 group = "dev.zitrone"
