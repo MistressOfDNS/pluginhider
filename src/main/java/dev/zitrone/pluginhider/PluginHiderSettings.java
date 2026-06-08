@@ -1,6 +1,5 @@
 package dev.zitrone.pluginhider;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -19,36 +18,6 @@ public record PluginHiderSettings(
     Set<String> hiddenRootCommands
 ) {
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacyAmpersand();
-    private static final Set<String> DEFAULT_HIDDEN_ROOT_COMMANDS = Set.of(
-        "essentials", "essentialsx", "worldedit", "worldguard", "luckperms", "vault",
-        "citizens", "cmi", "cmilib", "multiverse-core", "multiverse", "viaversion",
-        "viabackwards", "viarewind", "geysermc", "geyser", "floodgate", "protocollib",
-        "coreprotect", "griefprevention", "shopkeepers", "dynmap", "placeholderapi",
-        "skinsrestorer", "skript", "advancedanticheat", "vulcan", "grimac", "matrix",
-        "spartan", "aac", "karhu", "verus", "nocheatplus", "authme", "deluxemenus",
-        "plotsquared", "supervanish", "packetevents", "oraxen", "itemsadder",
-        "fawe", "fastasyncworldedit", "luckpermsbukkit", "essentialsgeoip",
-        "essentialsprotect", "essentialsspawn", "essentialsxspawn",
-        "multiverse-inventories", "multiverse-netherportals", "worldborder",
-        "votifier", "nuvotifier", "votingplugin", "excellentcrates", "crazycrates",
-        "cratekeys", "jobs", "jobsreborn", "mcmmo", "towny", "factions",
-        "factionsuuid", "lands", "residence", "claimchunk", "quickshop",
-        "quickshop-hikari", "chestshop", "shopgui", "auctionhouse", "combatlogx",
-        "litebans", "advancedban", "libertybans", "luckpermsgui", "tab", "tablist",
-        "scoreboard", "animatedscoreboard", "ajleaderboards", "ajqueue", "spark",
-        "sparkbukkit", "plan", "minimotd", "protocolsupport", "excellentenchants",
-        "eco", "ecoenchants", "mythicmobs", "mythiclib", "modelengine", "mmoitems",
-        "mmocore", "denizen", "citizenscmd", "sentinel", "npcs", "vulcanbungee",
-        "grimacbukkit", "negativity", "intave", "polar", "horizon", "themis",
-        "libreforge", "autotreechop", "axgraves", "curios", "freedomchat",
-        "minertrack", "probablybackpacks", "tabtps", "veinminer", "lp", "we", "rg",
-        "mv", "npc", "papi", "co", "grim", "viaver", "sr", "dm", "plots", "sv",
-        "spawn", "home", "homes", "warp", "warps", "tpa", "tpahere", "bal",
-        "balance", "money", "ban", "kick", "mute", "jail", "seen", "ptime",
-        "pweather", "tppos", "near", "back", "afk", "msg", "r", "reply", "mail",
-        "pay", "sell", "worth", "kit", "kits", "lb", "ab", "vote", "votes", "f",
-        "res", "qs", "ah", "mm", "ncp"
-    );
 
     public static PluginHiderSettings fromConfig(FileConfiguration config) {
         List<List<String>> blockedPaths = config.getStringList("blocked-command-paths").stream()
@@ -61,11 +30,10 @@ public record PluginHiderSettings(
             .filter(token -> !token.isEmpty())
             .collect(Collectors.toUnmodifiableSet());
 
-        Set<String> hiddenRootCommands = new HashSet<>(DEFAULT_HIDDEN_ROOT_COMMANDS);
-        hiddenRootCommands.addAll(config.getStringList("hidden-root-commands").stream()
+        Set<String> hiddenRootCommands = config.getStringList("hidden-root-commands").stream()
             .map(PluginHiderSettings::normalizeTokenStatic)
             .filter(token -> !token.isEmpty())
-            .collect(Collectors.toSet()));
+            .collect(Collectors.toUnmodifiableSet());
 
         return new PluginHiderSettings(
             config.getString("bypass-permission", "pluginhider.bypass"),
@@ -73,7 +41,7 @@ public record PluginHiderSettings(
             blockedPaths,
             config.getBoolean("hide-namespaced-commands", true),
             allowedNamespaces,
-            Set.copyOf(hiddenRootCommands)
+            hiddenRootCommands
         );
     }
 
