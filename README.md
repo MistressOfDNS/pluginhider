@@ -25,6 +25,7 @@ This repository keeps separate branches for each supported server/API version:
 | `1.21.8` | `1.21.8-R0.1-SNAPSHOT` |
 | `1.21.11` | `1.21.11-R0.1-SNAPSHOT` |
 | `version/26.1.2` | `26.1.2.build.69-stable` |
+| `26.3` | `26.3.build.238-stable` |
 
 Use the branch that matches your server version.
 

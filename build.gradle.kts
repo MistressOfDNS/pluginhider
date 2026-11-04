@@ -3,7 +3,7 @@ plugins {
 }
 
 val pluginVersion = "1.1"
-val paperTargetVersion = "26.1.2"
+val paperTargetVersion = "26.3"
 
 group = "dev.zitrone"
 version = pluginVersion
@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
+    compileOnly("io.papermc.paper:paper-api:26.3.build.238-stable")
 }
 
 java {
